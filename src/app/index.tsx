@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { createElement, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,41 +12,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-
-// Class names are only applied on web; native receives no extra props.
-function webClass(className: string): { className?: string } {
-  return Platform.OS === "web" ? { className } : {};
-}
-
-// The browser resolves this at first paint, without waiting for hydration,
-// useWindowDimensions, a resize event, or an effect.
-const WEB_LAYOUT_CSS = `
-  .pivot-login-page { flex-direction: row !important; width: 100% !important; }
-  .pivot-brand-panel { width: 52% !important; }
-  .pivot-login-panel { width: 48% !important; flex: 1 1 auto !important; }
-  /* max-device-width also catches iOS Safari when the viewport meta tag is missing. */
-  @media (max-width: 899px), (max-device-width: 899px) {
-    .pivot-login-page { flex-direction: column !important; width: 100% !important; }
-    .pivot-brand-panel {
-      width: 100% !important;
-      box-sizing: border-box !important;
-      min-height: 350px !important;
-      padding: 28px !important;
-    }
-    .pivot-login-panel {
-      width: 100% !important;
-      box-sizing: border-box !important;
-      flex: 0 0 auto !important;
-      padding-left: 28px !important;
-      padding-right: 28px !important;
-    }
-    .pivot-login-page .pivot-headline {
-      font-size: 34px !important;
-      line-height: 43px !important;
-      margin-top: 25px !important;
-    }
-  }
-`;
 
 const COLORS = {
   charcoal: "#202A32",
@@ -63,9 +28,22 @@ const COLORS = {
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
 
-  // Native uses measured dimensions. Web layout is handled by CSS media queries
-  // so the initial static production render does not depend on JS viewport size.
-  const isDesktop = Platform.OS === "web" || width >= 900;
+  // Expo's static web render may report a mobile-sized width on desktop.
+  // After hydration, read the browser viewport directly and keep it in sync.
+  const [browserWidth, setBrowserWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const updateWidth = () => setBrowserWidth(window.innerWidth);
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  const isDesktop =
+    (Platform.OS === "web" ? browserWidth : width) !== null &&
+    (Platform.OS === "web" ? browserWidth! : width) >= 900;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,22 +60,14 @@ export default function HomeScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {Platform.OS === "web" &&
-        createElement("style", {
-          dangerouslySetInnerHTML: { __html: WEB_LAYOUT_CSS },
-        })}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View
-          {...webClass("pivot-login-page")}
-          style={[styles.page, !isDesktop && styles.mobilePage]}
-        >
+        <View style={[styles.page, !isDesktop && styles.mobilePage]}>
           {/* LEFT BRANDING PANEL */}
           <View
-            {...webClass("pivot-brand-panel")}
             style={[styles.brandPanel, !isDesktop && styles.mobileBrandPanel]}
           >
             <View style={styles.brandHeader}>
@@ -123,7 +93,6 @@ export default function HomeScreen() {
               </View>
 
               <Text
-                {...webClass("pivot-headline")}
                 style={[styles.headline, !isDesktop && styles.mobileHeadline]}
               >
                 Every project.{"\n"}
@@ -150,7 +119,6 @@ export default function HomeScreen() {
 
           {/* RIGHT LOGIN PANEL */}
           <View
-            {...webClass("pivot-login-panel")}
             style={[styles.loginPanel, !isDesktop && styles.mobileLoginPanel]}
           >
             <View style={styles.loginContent}>
