@@ -1,3 +1,10 @@
+import type {
+    Event,
+    Project,
+    Status,
+    TaskStatus,
+} from "@/context/ProjectsContext";
+import { stages, useProjects } from "@/context/ProjectsContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import {
@@ -13,29 +20,6 @@ import {
     useWindowDimensions,
 } from "react-native";
 
-type Status = "In Progress" | "Needs Review" | "Blocked" | "Completed";
-type TaskStatus = "To Do" | "In Progress" | "Done";
-type Task = {
-  id: string;
-  title: string;
-  assignee: string;
-  status: TaskStatus;
-  stage: string;
-};
-type Event = { id: string; message: string; date: string };
-type Project = {
-  id: string;
-  name: string;
-  code: string;
-  type: string;
-  location: string;
-  manager: string;
-  stageIndex: number;
-  status: Status;
-  description: string;
-  tasks: Task[];
-  events: Event[];
-};
 const C = {
   orange: "#C47B42",
   dark: "#26313A",
@@ -46,15 +30,6 @@ const C = {
   green: "#3C936B",
   red: "#C45C55",
 };
-const stages = [
-  "Acquisition",
-  "Due Diligence",
-  "Entitlements",
-  "Design & Planning",
-  "Permitting",
-  "Construction",
-  "Closeout",
-];
 const types = [
   "Multifamily",
   "Commercial",
@@ -62,127 +37,6 @@ const types = [
   "Mixed-Use",
   "Industrial",
   "Other",
-];
-const seed: Project[] = [
-  {
-    id: "1",
-    name: "North Ridge Apartments",
-    code: "DEV-2026-014",
-    type: "Multifamily",
-    location: "Kansas City, MO",
-    manager: "James Mitchell",
-    stageIndex: 1,
-    status: "In Progress",
-    description: "Multifamily residential development.",
-    tasks: [
-      {
-        id: "n1",
-        title: "Environmental site assessment",
-        assignee: "Sarah Collins",
-        status: "Done",
-        stage: "Due Diligence",
-      },
-      {
-        id: "n2",
-        title: "Review title commitment",
-        assignee: "James Mitchell",
-        status: "In Progress",
-        stage: "Due Diligence",
-      },
-      {
-        id: "n3",
-        title: "Finalize feasibility report",
-        assignee: "Michael Turner",
-        status: "To Do",
-        stage: "Due Diligence",
-      },
-    ],
-    events: [
-      {
-        id: "e1",
-        message: "Project entered Due Diligence",
-        date: "Demo history",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Westfield Commercial",
-    code: "DEV-2026-009",
-    type: "Commercial",
-    location: "Columbus, OH",
-    manager: "Sarah Collins",
-    stageIndex: 2,
-    status: "Needs Review",
-    description: "Commercial development project.",
-    tasks: [
-      {
-        id: "w1",
-        title: "Submit zoning application",
-        assignee: "Sarah Collins",
-        status: "Done",
-        stage: "Entitlements",
-      },
-      {
-        id: "w2",
-        title: "Confirm municipal conditions",
-        assignee: "James Mitchell",
-        status: "Done",
-        stage: "Entitlements",
-      },
-    ],
-    events: [
-      { id: "e2", message: "Stage submitted for review", date: "Demo history" },
-    ],
-  },
-  {
-    id: "3",
-    name: "Oak Creek Residences",
-    code: "DEV-2026-021",
-    type: "Residential",
-    location: "Indianapolis, IN",
-    manager: "Michael Turner",
-    stageIndex: 0,
-    status: "In Progress",
-    description: "Residential development project.",
-    tasks: [
-      {
-        id: "o1",
-        title: "Negotiate purchase agreement",
-        assignee: "Michael Turner",
-        status: "In Progress",
-        stage: "Acquisition",
-      },
-    ],
-    events: [],
-  },
-  {
-    id: "4",
-    name: "Central Plaza",
-    code: "DEV-2026-005",
-    type: "Mixed-Use",
-    location: "Nashville, TN",
-    manager: "Emily Parker",
-    stageIndex: 5,
-    status: "Blocked",
-    description: "Mixed-use commercial and residential development.",
-    tasks: [
-      {
-        id: "c1",
-        title: "Resolve contractor schedule",
-        assignee: "Emily Parker",
-        status: "To Do",
-        stage: "Construction",
-      },
-    ],
-    events: [
-      {
-        id: "e4",
-        message: "Construction flagged as blocked",
-        date: "Demo history",
-      },
-    ],
-  },
 ];
 const progress = (p: Project) =>
   p.status === "Completed"
@@ -196,7 +50,7 @@ export default function ProjectsWorkspace() {
   const { width, height } = useWindowDimensions();
   const compact = width < 1000;
   const mobile = width < 600;
-  const [projects, setProjects] = useState<Project[]>(seed);
+  const { projects, setProjects } = useProjects();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");

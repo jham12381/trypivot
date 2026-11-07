@@ -11,6 +11,8 @@ import {
 } from "react-native";
 
 import ProjectsWorkspace from "@/components/ProjectsWorkspace";
+import TasksWorkspace from "@/components/TasksWorkspace";
+import { ProjectsProvider } from "@/context/ProjectsContext";
 
 const COLORS = {
   sidebar: "#202A32",
@@ -115,7 +117,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export default function DashboardScreen() {
+function DashboardContent() {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
@@ -415,6 +417,8 @@ export default function DashboardScreen() {
             </>
           ) : activeNav === "Projects" ? (
             <ProjectsWorkspace />
+          ) : activeNav === "My Tasks" ? (
+            <TasksWorkspace />
           ) : (
             <View style={styles.placeholder}>
               <Ionicons
@@ -868,3 +872,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.45)",
   },
 });
+
+export default function DashboardScreen() {
+  return (
+    <ProjectsProvider>
+      <DashboardContent />
+    </ProjectsProvider>
+  );
+}
