@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { createElement, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,6 +12,38 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+
+// Class names are only applied on web; native receives no extra props.
+function webClass(className: string): { className?: string } {
+  return Platform.OS === "web" ? { className } : {};
+}
+
+// The browser resolves this at first paint, without waiting for hydration,
+// useWindowDimensions, a resize event, or an effect.
+const WEB_LAYOUT_CSS = `
+  .pivot-login-page { flex-direction: row !important; width: 100% !important; }
+  .pivot-brand-panel { width: 52% !important; }
+  .pivot-login-panel { width: 48% !important; flex: 1 1 auto !important; }
+  @media (max-width: 899px) {
+    .pivot-login-page { flex-direction: column !important; }
+    .pivot-brand-panel {
+      width: 100% !important;
+      min-height: 350px !important;
+      padding: 28px !important;
+    }
+    .pivot-login-panel {
+      width: 100% !important;
+      flex: 0 0 auto !important;
+      padding-left: 28px !important;
+      padding-right: 28px !important;
+    }
+    .pivot-headline {
+      font-size: 34px !important;
+      line-height: 43px !important;
+      margin-top: 25px !important;
+    }
+  }
+`;
 
 const COLORS = {
   charcoal: "#202A32",
@@ -27,7 +59,10 @@ const COLORS = {
 
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900;
+
+  // Native uses measured dimensions. Web layout is handled by CSS media queries
+  // so the initial static production render does not depend on JS viewport size.
+  const isDesktop = Platform.OS === "web" || width >= 900;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,181 +79,191 @@ export default function HomeScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      {Platform.OS === "web" &&
+        createElement("style", {
+          dangerouslySetInnerHTML: { __html: WEB_LAYOUT_CSS },
+        })}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={[
-          styles.page,
-          {
-            flexDirection: isDesktop ? "row" : "column",
-            minHeight: "100%",
-          },
-        ]}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        {/* LEFT BRANDING PANEL */}
         <View
-          style={[
-            styles.brandPanel,
-            isDesktop ? { width: "52%" } : styles.mobileBrandPanel,
-          ]}
+          {...webClass("pivot-login-page")}
+          style={[styles.page, !isDesktop && styles.mobilePage]}
         >
-          <View style={styles.brandHeader}>
-            <View style={styles.logo}>
-              <Ionicons name="layers-outline" size={24} color={COLORS.white} />
-            </View>
-
-            <Text style={styles.brandName}>
-              PIVOT<Text style={styles.brandDot}>.</Text>
-            </Text>
-          </View>
-
-          <View style={styles.brandContent}>
-            <View style={styles.eyebrowContainer}>
-              <View style={styles.orangeLine} />
-              <Text style={styles.eyebrow}>DEVELOPMENT WORKFLOW PLATFORM</Text>
-            </View>
-
-            <Text
-              style={[styles.headline, !isDesktop && styles.mobileHeadline]}
-            >
-              Every project.{"\n"}
-              Every process.{"\n"}
-              <Text style={styles.headlineAccent}>One direction.</Text>
-            </Text>
-
-            <Text style={styles.description}>
-              A smarter way to coordinate development, streamline approvals, and
-              keep every project moving forward.
-            </Text>
-          </View>
-
-          <View style={styles.brandFooter}>
-            <View style={styles.footerLine} />
-            <Text style={styles.brandFooterText}>
-              BUILT FOR THE WAY YOU DEVELOP
-            </Text>
-          </View>
-
-          <View style={styles.decorativeCircleOne} />
-          <View style={styles.decorativeCircleTwo} />
-        </View>
-
-        {/* RIGHT LOGIN PANEL */}
-        <View
-          style={[
-            styles.loginPanel,
-            isDesktop ? { width: "48%", flex: 1 } : { width: "100%", flex: 0 },
-          ]}
-        >
-          <View style={styles.loginContent}>
-            <View style={styles.welcomeBadge}>
-              <View style={styles.statusDot} />
-              <Text style={styles.welcomeBadgeText}>YOUR WORKSPACE</Text>
-            </View>
-
-            <Text style={styles.loginTitle}>Welcome back</Text>
-
-            <Text style={styles.loginSubtitle}>
-              Sign in to access your development workspace.
-            </Text>
-
-            {/* EMAIL */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Email address</Text>
-
-              <View style={styles.inputWrapper}>
-                <Ionicons name="mail-outline" size={19} color={COLORS.muted} />
-
-                <TextInput
-                  style={styles.input}
-                  placeholder="name@company.com"
-                  placeholderTextColor="#A4ACB1"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
+          {/* LEFT BRANDING PANEL */}
+          <View
+            {...webClass("pivot-brand-panel")}
+            style={[styles.brandPanel, !isDesktop && styles.mobileBrandPanel]}
+          >
+            <View style={styles.brandHeader}>
+              <View style={styles.logo}>
+                <Ionicons
+                  name="layers-outline"
+                  size={24}
+                  color={COLORS.white}
                 />
               </View>
+
+              <Text style={styles.brandName}>
+                PIVOT<Text style={styles.brandDot}>.</Text>
+              </Text>
             </View>
 
-            {/* PASSWORD */}
-            <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
+            <View style={styles.brandContent}>
+              <View style={styles.eyebrowContainer}>
+                <View style={styles.orangeLine} />
+                <Text style={styles.eyebrow}>
+                  DEVELOPMENT WORKFLOW PLATFORM
+                </Text>
+              </View>
 
-              <View style={styles.inputWrapper}>
+              <Text
+                {...webClass("pivot-headline")}
+                style={[styles.headline, !isDesktop && styles.mobileHeadline]}
+              >
+                Every project.{"\n"}
+                Every process.{"\n"}
+                <Text style={styles.headlineAccent}>One direction.</Text>
+              </Text>
+
+              <Text style={styles.description}>
+                A smarter way to coordinate development, streamline approvals,
+                and keep every project moving forward.
+              </Text>
+            </View>
+
+            <View style={styles.brandFooter}>
+              <View style={styles.footerLine} />
+              <Text style={styles.brandFooterText}>
+                BUILT FOR THE WAY YOU DEVELOP
+              </Text>
+            </View>
+
+            <View style={styles.decorativeCircleOne} />
+            <View style={styles.decorativeCircleTwo} />
+          </View>
+
+          {/* RIGHT LOGIN PANEL */}
+          <View
+            {...webClass("pivot-login-panel")}
+            style={[styles.loginPanel, !isDesktop && styles.mobileLoginPanel]}
+          >
+            <View style={styles.loginContent}>
+              <View style={styles.welcomeBadge}>
+                <View style={styles.statusDot} />
+                <Text style={styles.welcomeBadgeText}>YOUR WORKSPACE</Text>
+              </View>
+
+              <Text style={styles.loginTitle}>Welcome back</Text>
+
+              <Text style={styles.loginSubtitle}>
+                Sign in to access your development workspace.
+              </Text>
+
+              {/* EMAIL */}
+              <View style={styles.field}>
+                <Text style={styles.label}>Email address</Text>
+
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="mail-outline"
+                    size={19}
+                    color={COLORS.muted}
+                  />
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="name@company.com"
+                    placeholderTextColor="#A4ACB1"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                  />
+                </View>
+              </View>
+
+              {/* PASSWORD */}
+              <View style={styles.field}>
+                <Text style={styles.label}>Password</Text>
+
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={19}
+                    color={COLORS.muted}
+                  />
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#A4ACB1"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoComplete="current-password"
+                  />
+
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    accessibilityLabel={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={20}
+                      color={COLORS.muted}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.forgotRow}>
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              </View>
+
+              {/* LOGIN BUTTON */}
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={handleLogin}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.loginButtonText}>Sign in to workspace</Text>
+
+                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+              </TouchableOpacity>
+
+              <View style={styles.loginDivider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>SECURE ACCESS</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <View style={styles.securityNotice}>
                 <Ionicons
-                  name="lock-closed-outline"
+                  name="shield-checkmark-outline"
                   size={19}
                   color={COLORS.muted}
                 />
 
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your password"
-                  placeholderTextColor="#A4ACB1"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoComplete="current-password"
-                />
-
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  accessibilityLabel={
-                    showPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color={COLORS.muted}
-                  />
-                </TouchableOpacity>
+                <Text style={styles.securityText}>
+                  Authorized personnel only. Your workspace and project
+                  information are protected.
+                </Text>
               </View>
             </View>
 
-            <View style={styles.forgotRow}>
-              <Text style={styles.forgotText}>Forgot password?</Text>
-            </View>
-
-            {/* LOGIN BUTTON */}
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={handleLogin}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.loginButtonText}>Sign in to workspace</Text>
-
-              <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
-            </TouchableOpacity>
-
-            <View style={styles.loginDivider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>SECURE ACCESS</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            <View style={styles.securityNotice}>
-              <Ionicons
-                name="shield-checkmark-outline"
-                size={19}
-                color={COLORS.muted}
-              />
-
-              <Text style={styles.securityText}>
-                Authorized personnel only. Your workspace and project
-                information are protected.
+            <View style={styles.loginFooter}>
+              <Text style={styles.copyright}>
+                © {new Date().getFullYear()} Pivot. All rights reserved.
               </Text>
+
+              <Text style={styles.version}>PLATFORM v0.1</Text>
             </View>
-          </View>
-
-          <View style={styles.loginFooter}>
-            <Text style={styles.copyright}>
-              © {new Date().getFullYear()} Pivot. All rights reserved.
-            </Text>
-
-            <Text style={styles.version}>PLATFORM v0.1</Text>
           </View>
         </View>
       </ScrollView>
@@ -231,6 +276,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.cream,
   },
+  scrollContent: { flexGrow: 1 },
   page: {
     flexGrow: 1,
     flexDirection: "row",
@@ -367,6 +413,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     minHeight: 700,
+  },
+  mobileLoginPanel: {
+    width: "100%",
+    flex: 0,
+    paddingHorizontal: 28,
   },
   loginContent: {
     width: "100%",
