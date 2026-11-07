@@ -24,20 +24,23 @@ const WEB_LAYOUT_CSS = `
   .pivot-login-page { flex-direction: row !important; width: 100% !important; }
   .pivot-brand-panel { width: 52% !important; }
   .pivot-login-panel { width: 48% !important; flex: 1 1 auto !important; }
-  @media (max-width: 899px) {
-    .pivot-login-page { flex-direction: column !important; }
+  /* max-device-width also catches iOS Safari when the viewport meta tag is missing. */
+  @media (max-width: 899px), (max-device-width: 899px) {
+    .pivot-login-page { flex-direction: column !important; width: 100% !important; }
     .pivot-brand-panel {
       width: 100% !important;
+      box-sizing: border-box !important;
       min-height: 350px !important;
       padding: 28px !important;
     }
     .pivot-login-panel {
       width: 100% !important;
+      box-sizing: border-box !important;
       flex: 0 0 auto !important;
       padding-left: 28px !important;
       padding-right: 28px !important;
     }
-    .pivot-headline {
+    .pivot-login-page .pivot-headline {
       font-size: 34px !important;
       line-height: 43px !important;
       margin-top: 25px !important;
