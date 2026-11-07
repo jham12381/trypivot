@@ -45,12 +45,22 @@ export default function HomeScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerStyle={[styles.page, !isDesktop && styles.mobilePage]}
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.page,
+          {
+            flexDirection: isDesktop ? "row" : "column",
+            minHeight: "100%",
+          },
+        ]}
         keyboardShouldPersistTaps="handled"
       >
         {/* LEFT BRANDING PANEL */}
         <View
-          style={[styles.brandPanel, !isDesktop && styles.mobileBrandPanel]}
+          style={[
+            styles.brandPanel,
+            isDesktop ? { width: "52%" } : styles.mobileBrandPanel,
+          ]}
         >
           <View style={styles.brandHeader}>
             <View style={styles.logo}>
@@ -94,7 +104,12 @@ export default function HomeScreen() {
         </View>
 
         {/* RIGHT LOGIN PANEL */}
-        <View style={styles.loginPanel}>
+        <View
+          style={[
+            styles.loginPanel,
+            isDesktop ? { width: "48%", flex: 1 } : { width: "100%", flex: 0 },
+          ]}
+        >
           <View style={styles.loginContent}>
             <View style={styles.welcomeBadge}>
               <View style={styles.statusDot} />
