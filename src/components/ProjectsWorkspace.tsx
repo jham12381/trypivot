@@ -348,8 +348,13 @@ export default function ProjectsWorkspace() {
                 );
               })}
             </ScrollView>
-            <View style={s.actionPanel}>
-              <View style={{ flex: 1, minWidth: 180 }}>
+            <View style={[s.actionPanel, mobile && s.actionPanelMobile]}>
+              <View
+                style={[
+                  { flex: 1, minWidth: 180 },
+                  mobile && s.actionInfoMobile,
+                ]}
+              >
                 <Text style={s.actionTitle}>
                   {selected.status === "Completed"
                     ? "Project complete"
@@ -367,13 +372,19 @@ export default function ProjectsWorkspace() {
                       : `${incompleteStageTasks} open task${incompleteStageTasks === 1 ? "" : "s"} in the current stage.`}
                 </Text>
               </View>
-              <View style={s.actionButtons}>
+              <View style={[s.actionButtons, mobile && s.actionButtonsMobile]}>
                 {selected.status === "Needs Review" ? (
                   <>
-                    <TouchableOpacity style={s.outlineButton} onPress={reject}>
+                    <TouchableOpacity
+                      style={[s.outlineButton, mobile && s.actionButtonMobile]}
+                      onPress={reject}
+                    >
                       <Text style={s.outlineText}>Reject & Return</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={s.primaryButton} onPress={approve}>
+                    <TouchableOpacity
+                      style={[s.primaryButton, mobile && s.actionButtonMobile]}
+                      onPress={approve}
+                    >
                       <Ionicons name="checkmark" size={17} color="#FFF" />
                       <Text style={s.primaryText}>Approve Stage</Text>
                     </TouchableOpacity>
@@ -382,7 +393,10 @@ export default function ProjectsWorkspace() {
                   <>
                     {selected.status === "Blocked" && (
                       <TouchableOpacity
-                        style={s.outlineButton}
+                        style={[
+                          s.outlineButton,
+                          mobile && s.actionButtonMobile,
+                        ]}
                         onPress={() =>
                           editProject(selected.id, (p) => ({
                             ...p,
@@ -398,6 +412,7 @@ export default function ProjectsWorkspace() {
                       style={[
                         s.primaryButton,
                         selected.status === "Blocked" && s.disabledButton,
+                        mobile && s.actionButtonMobile,
                       ]}
                       disabled={selected.status === "Blocked"}
                       onPress={requestReview}
@@ -1192,4 +1207,25 @@ const s = StyleSheet.create({
   },
   cancelButton: { paddingHorizontal: 16, paddingVertical: 12 },
   cancelText: { color: C.muted, fontSize: 13, fontWeight: "700" },
+  // Keep the approval message and controls within the mobile panel.
+  actionPanelMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
+  actionInfoMobile: {
+    flex: 0,
+    minWidth: 0,
+    width: "100%",
+  },
+  actionButtonsMobile: {
+    flexDirection: "column",
+    flexWrap: "nowrap",
+    width: "100%",
+    alignItems: "stretch",
+  },
+  actionButtonMobile: {
+    width: "100%",
+    alignSelf: "stretch",
+    justifyContent: "center",
+  },
 });
