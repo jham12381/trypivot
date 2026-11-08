@@ -10,9 +10,15 @@ import {
     View,
 } from "react-native";
 
+import DocumentsWorkspace from "@/components/DocumentsWorkspace";
 import ProjectsWorkspace from "@/components/ProjectsWorkspace";
+import SettingsWorkspace from "@/components/SettingsWorkspace";
 import TasksWorkspace from "@/components/TasksWorkspace";
+import TeamWorkspace from "@/components/TeamWorkspace";
+import WorkflowsWorkspace from "@/components/WorkflowsWorkspace";
+import { DocumentsProvider } from "@/context/DocumentsContext";
 import { ProjectsProvider } from "@/context/ProjectsContext";
+import { TeamProvider } from "@/context/TeamContext";
 
 const COLORS = {
   sidebar: "#202A32",
@@ -419,6 +425,14 @@ function DashboardContent() {
             <ProjectsWorkspace />
           ) : activeNav === "My Tasks" ? (
             <TasksWorkspace />
+          ) : activeNav === "Workflows" ? (
+            <WorkflowsWorkspace />
+          ) : activeNav === "Documents" ? (
+            <DocumentsWorkspace />
+          ) : activeNav === "Team" ? (
+            <TeamWorkspace />
+          ) : activeNav === "Settings" ? (
+            <SettingsWorkspace />
           ) : (
             <View style={styles.placeholder}>
               <Ionicons
@@ -876,7 +890,11 @@ const styles = StyleSheet.create({
 export default function DashboardScreen() {
   return (
     <ProjectsProvider>
-      <DashboardContent />
+      <DocumentsProvider>
+        <TeamProvider>
+          <DashboardContent />
+        </TeamProvider>
+      </DocumentsProvider>
     </ProjectsProvider>
   );
 }

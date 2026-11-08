@@ -306,51 +306,109 @@ export default function TasksWorkspace() {
             <Text style={s.muted}>Try another filter or create a task.</Text>
           </View>
         ) : (
-          filtered.map((row) => (
-            <View
-              key={`${row.project.id}-${row.task.id}`}
-              style={[s.taskRow, mobile && s.taskRowMobile]}
-            >
-              <TouchableOpacity
-                style={{ flex: 1, minWidth: 0 }}
-                onPress={() => openEdit(row)}
+          filtered.map((row) =>
+            mobile ? (
+              <View
+                key={`${row.project.id}-${row.task.id}`}
+                style={s.mobileTaskCard}
               >
-                <Text style={s.taskTitle}>{row.task.title}</Text>
-                <Text style={s.meta}>
+                <View style={s.mobileTaskHeader}>
+                  <TouchableOpacity
+                    onPress={() => openEdit(row)}
+                    style={s.mobileTaskTitleArea}
+                  >
+                    <Text style={s.taskTitle}>{row.task.title}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => openEdit(row)}
+                    style={s.edit}
+                    accessibilityLabel="Edit task"
+                  >
+                    <Ionicons
+                      name="create-outline"
+                      size={20}
+                      color={C.orange}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <Text style={s.mobileTaskMeta}>
                   {row.project.name} · {row.task.stage}
                 </Text>
-                <Text style={s.meta}>
+                <Text style={s.mobileTaskMeta}>
                   {row.task.assignee} · {row.task.priority || "Medium"} priority
                   {row.task.dueDate ? ` · Due ${row.task.dueDate}` : ""}
                 </Text>
                 {isOverdue(row.task) && <Text style={s.overdue}>Overdue</Text>}
-              </TouchableOpacity>
-              <View style={s.statuses}>
-                {statuses.map((status) => (
-                  <TouchableOpacity
-                    key={status}
-                    onPress={() => changeStatus(row, status)}
-                    style={[
-                      s.statusChip,
-                      row.task.status === status && s.statusActive,
-                    ]}
-                  >
-                    <Text
+                <View style={s.mobileStatusSection}>
+                  <View style={s.mobileStatusButtons}>
+                    {statuses.map((status) => (
+                      <TouchableOpacity
+                        key={status}
+                        onPress={() => changeStatus(row, status)}
+                        style={[
+                          s.statusChip,
+                          row.task.status === status && s.statusActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            s.statusText,
+                            row.task.status === status && s.statusSelected,
+                          ]}
+                        >
+                          {status}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View key={`${row.project.id}-${row.task.id}`} style={s.taskRow}>
+                <TouchableOpacity
+                  style={s.taskDetails}
+                  onPress={() => openEdit(row)}
+                >
+                  <Text style={s.taskTitle}>{row.task.title}</Text>
+                  <Text style={s.meta}>
+                    {row.project.name} · {row.task.stage}
+                  </Text>
+                  <Text style={s.meta}>
+                    {row.task.assignee} · {row.task.priority || "Medium"}{" "}
+                    priority
+                    {row.task.dueDate ? ` · Due ${row.task.dueDate}` : ""}
+                  </Text>
+                  {isOverdue(row.task) && (
+                    <Text style={s.overdue}>Overdue</Text>
+                  )}
+                </TouchableOpacity>
+                <View style={s.statuses}>
+                  {statuses.map((status) => (
+                    <TouchableOpacity
+                      key={status}
+                      onPress={() => changeStatus(row, status)}
                       style={[
-                        s.statusText,
-                        row.task.status === status && s.statusSelected,
+                        s.statusChip,
+                        row.task.status === status && s.statusActive,
                       ]}
                     >
-                      {status}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          s.statusText,
+                          row.task.status === status && s.statusSelected,
+                        ]}
+                      >
+                        {status}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TouchableOpacity onPress={() => openEdit(row)} style={s.edit}>
+                  <Ionicons name="create-outline" size={20} color={C.orange} />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => openEdit(row)} style={s.edit}>
-                <Ionicons name="create-outline" size={20} color={C.orange} />
-              </TouchableOpacity>
-            </View>
-          ))
+            ),
+          )
         )}
       </View>
       <Modal
@@ -572,7 +630,43 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: C.border,
   },
-  taskRowMobile: { flexWrap: "wrap" },
+  taskDetails: { flex: 1, minWidth: 0 },
+  mobileTaskCard: {
+    width: "100%",
+    alignSelf: "stretch",
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+  },
+  mobileTaskHeader: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  mobileTaskTitleArea: { flexShrink: 1, minWidth: 0 },
+  mobileTaskMeta: {
+    color: C.muted,
+    fontSize: 12,
+    lineHeight: 19,
+    marginTop: 6,
+    flexShrink: 1,
+  },
+  mobileStatusSection: {
+    marginTop: 14,
+    paddingTop: 13,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+    width: "100%",
+  },
+  mobileStatusButtons: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 7,
+  },
   taskTitle: { color: C.dark, fontSize: 14, fontWeight: "800" },
   meta: { color: C.muted, fontSize: 12, marginTop: 5 },
   overdue: { color: C.red, fontSize: 12, fontWeight: "700", marginTop: 7 },
