@@ -24,7 +24,7 @@ export type TeamMember = {
 const seed: TeamMember[] = [
   {
     id: "jm",
-    name: "James Mitchell",
+    name: "Johnny Ham",
     title: "Development Director",
     department: "Development",
     email: "",
@@ -38,7 +38,7 @@ const seed: TeamMember[] = [
   },
   {
     id: "sc",
-    name: "Sarah Collins",
+    name: "Jordan Nolen",
     title: "Entitlements Manager",
     department: "Planning & Entitlements",
     email: "",
@@ -52,7 +52,7 @@ const seed: TeamMember[] = [
   },
   {
     id: "mt",
-    name: "Michael Turner",
+    name: "Kyle Grey",
     title: "Project Manager",
     department: "Project Management",
     email: "",
@@ -66,7 +66,7 @@ const seed: TeamMember[] = [
   },
   {
     id: "ep",
-    name: "Emily Parker",
+    name: "Alison Owens",
     title: "Construction Manager",
     department: "Construction",
     email: "",
