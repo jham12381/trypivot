@@ -8,7 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
 
 type Settings = {
@@ -282,7 +282,7 @@ export default function SettingsWorkspace() {
               <>
                 <View style={s.profileRow}>
                   <View style={s.avatar}>
-                    <Text style={s.avatarText}>JD</Text>
+                    <Text style={s.avatarText}>JH</Text>
                   </View>
                   <View style={s.headingCopy}>
                     <Text style={s.rowTitle}>
