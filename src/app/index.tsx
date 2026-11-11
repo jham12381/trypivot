@@ -1,5 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Layers,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+} from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -72,11 +80,7 @@ export default function HomeScreen() {
           >
             <View style={styles.brandHeader}>
               <View style={styles.logo}>
-                <Ionicons
-                  name="layers-outline"
-                  size={24}
-                  color={COLORS.white}
-                />
+                <Layers size={24} color={COLORS.white} />
               </View>
 
               <Text style={styles.brandName}>
@@ -138,11 +142,7 @@ export default function HomeScreen() {
                 <Text style={styles.label}>Email address</Text>
 
                 <View style={styles.inputWrapper}>
-                  <Ionicons
-                    name="mail-outline"
-                    size={19}
-                    color={COLORS.muted}
-                  />
+                  <Mail size={19} color={COLORS.muted} />
 
                   <TextInput
                     style={styles.input}
@@ -162,11 +162,7 @@ export default function HomeScreen() {
                 <Text style={styles.label}>Password</Text>
 
                 <View style={styles.inputWrapper}>
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={19}
-                    color={COLORS.muted}
-                  />
+                  <LockKeyhole size={19} color={COLORS.muted} />
 
                   <TextInput
                     style={styles.input}
@@ -184,11 +180,11 @@ export default function HomeScreen() {
                       showPassword ? "Hide password" : "Show password"
                     }
                   >
-                    <Ionicons
-                      name={showPassword ? "eye-off-outline" : "eye-outline"}
-                      size={20}
-                      color={COLORS.muted}
-                    />
+                    {showPassword ? (
+                      <EyeOff size={20} color={COLORS.muted} />
+                    ) : (
+                      <Eye size={20} color={COLORS.muted} />
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -205,7 +201,7 @@ export default function HomeScreen() {
               >
                 <Text style={styles.loginButtonText}>Sign in to workspace</Text>
 
-                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+                <ArrowRight size={20} color={COLORS.white} />
               </TouchableOpacity>
 
               <View style={styles.loginDivider}>
@@ -215,11 +211,7 @@ export default function HomeScreen() {
               </View>
 
               <View style={styles.securityNotice}>
-                <Ionicons
-                  name="shield-checkmark-outline"
-                  size={19}
-                  color={COLORS.muted}
-                />
+                <ShieldCheck size={19} color={COLORS.muted} />
 
                 <Text style={styles.securityText}>
                   Authorized personnel only. Your workspace and project
