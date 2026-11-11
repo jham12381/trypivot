@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Sparkles } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
@@ -300,7 +301,7 @@ export default function PivotAIPanel({
         <View style={[styles.header, mobile && styles.mobileHeader]}>
           <View style={styles.headingLeft}>
             <View style={styles.sparkleIcon}>
-              <Ionicons name="sparkles" size={20} color={C.orange} />
+              <Sparkles size={20} color={C.orange} strokeWidth={2} />
             </View>
 
             <View>

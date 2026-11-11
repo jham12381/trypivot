@@ -136,8 +136,13 @@ function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     ...Ionicons.font,
+  });
+
+  console.log("Pivot Ionicons font:", {
+    fontsLoaded,
+    error: fontError?.message,
   });
 
   const handleNav = (label: string) => {
