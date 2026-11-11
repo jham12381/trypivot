@@ -297,7 +297,7 @@ export default function PivotAIPanel({
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {/* HEADER */}
-        <View style={styles.header}>
+        <View style={[styles.header, mobile && styles.mobileHeader]}>
           <View style={styles.headingLeft}>
             <View style={styles.sparkleIcon}>
               <Ionicons name="sparkles" size={20} color={C.orange} />
@@ -934,5 +934,10 @@ const styles = StyleSheet.create({
     backgroundColor: C.orange,
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  mobileHeader: {
+    paddingHorizontal: 16,
+    minHeight: 76,
   },
 });

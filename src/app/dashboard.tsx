@@ -21,6 +21,7 @@ import WorkflowsWorkspace from "@/components/WorkflowsWorkspace";
 import { DocumentsProvider } from "@/context/DocumentsContext";
 import { ProjectsProvider } from "@/context/ProjectsContext";
 import { TeamProvider } from "@/context/TeamContext";
+import { useFonts } from "expo-font";
 
 const COLORS = {
   sidebar: "#202A32",
@@ -135,6 +136,10 @@ function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
+  const [fontsLoaded] = useFonts({
+    ...Ionicons.font,
+  });
+
   const handleNav = (label: string) => {
     setActiveNav(label);
     setSidebarOpen(false);
@@ -153,7 +158,11 @@ function DashboardContent() {
 
       <Text style={styles.navSection}>WORKSPACE</Text>
 
-      <View style={styles.navItems}>
+      <ScrollView
+        style={styles.navItems}
+        contentContainerStyle={styles.navItemsContent}
+        showsVerticalScrollIndicator={false}
+      >
         {navigation.map((item) => (
           <TouchableOpacity
             key={item.label}
@@ -179,7 +188,7 @@ function DashboardContent() {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       <View style={styles.sidebarBottom}>
         <TouchableOpacity
@@ -223,6 +232,17 @@ function DashboardContent() {
       </View>
     </View>
   );
+
+  if (!fontsLoaded) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: COLORS.background,
+        }}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -371,7 +391,11 @@ const styles = StyleSheet.create({
   },
   navItems: {
     flex: 1,
+    minHeight: 0,
+  },
+  navItemsContent: {
     gap: 5,
+    paddingBottom: 20,
   },
   navItem: {
     height: 46,
@@ -420,7 +444,8 @@ const styles = StyleSheet.create({
   sidebarBottom: {
     borderTopWidth: 1,
     borderTopColor: "#35414A",
-    paddingTop: 20,
+    paddingTop: 16,
+    flexShrink: 0,
   },
   workspaceInfo: {
     flexDirection: "row",
