@@ -230,14 +230,20 @@ function DashboardContent() {
 
       <View style={styles.main}>
         {/* TOP HEADER */}
-        <View style={styles.topbar}>
+        <View style={[styles.topbar, !isDesktop && styles.mobileTopbar]}>
           <View style={styles.topbarLeft}>
             {!isDesktop && (
-              <TouchableOpacity onPress={() => setSidebarOpen(!sidebarOpen)}>
-                <Ionicons name="menu-outline" size={27} color={COLORS.text} />
+              <TouchableOpacity
+                onPress={() => setSidebarOpen(true)}
+                style={styles.mobileMenuButton}
+                accessibilityRole="button"
+                accessibilityLabel="Open navigation menu"
+              >
+                <View style={styles.hamburgerLine} />
+                <View style={styles.hamburgerLine} />
+                <View style={styles.hamburgerLine} />
               </TouchableOpacity>
             )}
-
             <View>
               <Text style={styles.breadcrumb}>
                 WORKSPACE / {activeNav.toUpperCase()}
@@ -760,6 +766,26 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: "rgba(0,0,0,0.45)",
+  },
+  mobileMenuButton: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    borderRadius: 9,
+    backgroundColor: "#F5F2EC",
+    flexShrink: 0,
+  },
+
+  hamburgerLine: {
+    width: 21,
+    height: 2.5,
+    borderRadius: 2,
+    backgroundColor: COLORS.text,
+  },
+  mobileTopbar: {
+    paddingHorizontal: 16,
   },
 });
 
