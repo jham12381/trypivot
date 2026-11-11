@@ -11,6 +11,8 @@ import {
 } from "react-native";
 
 import DocumentsWorkspace from "@/components/DocumentsWorkspace";
+import PersonalizedDashboard from "@/components/PersonalizedDashboard";
+import PivotAIPanel from "@/components/PivotAIPanel";
 import ProjectsWorkspace from "@/components/ProjectsWorkspace";
 import SettingsWorkspace from "@/components/SettingsWorkspace";
 import TasksWorkspace from "@/components/TasksWorkspace";
@@ -131,6 +133,7 @@ function DashboardContent() {
 
   const [activeNav, setActiveNav] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const handleNav = (label: string) => {
     setActiveNav(label);
@@ -179,6 +182,27 @@ function DashboardContent() {
       </View>
 
       <View style={styles.sidebarBottom}>
+        <TouchableOpacity
+          style={[styles.aiLauncher, aiOpen && styles.aiLauncherActive]}
+          onPress={() => {
+            setAiOpen((open) => !open);
+            setSidebarOpen(false);
+          }}
+          accessibilityLabel="Toggle Pivot AI assistant"
+        >
+          <View style={styles.aiLauncherIcon}>
+            <Ionicons name="sparkles" size={20} color={COLORS.orangeLight} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.aiLauncherTitle}>Pivot AI</Text>
+            <Text style={styles.aiLauncherSub}>Your project assistant</Text>
+          </View>
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={COLORS.orangeLight}
+          />
+        </TouchableOpacity>
         <View style={styles.workspaceInfo}>
           <View style={styles.workspaceAvatar}>
             <Text style={styles.workspaceAvatarText}>D</Text>
@@ -244,183 +268,7 @@ function DashboardContent() {
           showsVerticalScrollIndicator={false}
         >
           {activeNav === "Dashboard" ? (
-            <>
-              <View style={styles.pageHeading}>
-                <View>
-                  <Text style={styles.pageTitle}>Portfolio Overview</Text>
-                  <Text style={styles.pageSubtitle}>
-                    Here's what's happening across your development projects.
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.primaryButton}
-                  onPress={() => handleNav("Projects")}
-                >
-                  <Ionicons name="add" size={19} color="#FFF" />
-                  <Text style={styles.primaryButtonText}>New Project</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* SUMMARY CARDS */}
-              <View style={styles.statsGrid}>
-                {[
-                  {
-                    label: "Active Projects",
-                    value: "24",
-                    icon: "business-outline" as IconName,
-                  },
-                  {
-                    label: "Open Tasks",
-                    value: "86",
-                    icon: "checkbox-outline" as IconName,
-                  },
-                  {
-                    label: "Awaiting Review",
-                    value: "7",
-                    icon: "time-outline" as IconName,
-                  },
-                  {
-                    label: "Completed Projects",
-                    value: "12",
-                    icon: "checkmark-circle-outline" as IconName,
-                  },
-                ].map((stat) => (
-                  <View
-                    key={stat.label}
-                    style={[
-                      styles.statCard,
-                      { width: isDesktop ? "23.5%" : "48%" },
-                    ]}
-                  >
-                    <View style={styles.statTop}>
-                      <Text style={styles.statLabel}>{stat.label}</Text>
-                      <Ionicons
-                        name={stat.icon}
-                        size={21}
-                        color={COLORS.orange}
-                      />
-                    </View>
-                    <Text style={styles.statValue}>{stat.value}</Text>
-                    <View style={styles.statAccent} />
-                  </View>
-                ))}
-              </View>
-
-              {/* PROJECTS */}
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <View>
-                    <Text style={styles.sectionTitle}>Active Projects</Text>
-                    <Text style={styles.sectionSubtitle}>
-                      Current development pipeline
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity onPress={() => handleNav("Projects")}>
-                    <Text style={styles.viewAll}>View all →</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={styles.table}>
-                    <View style={styles.tableHeader}>
-                      <Text style={[styles.tableHeading, { width: 245 }]}>
-                        PROJECT
-                      </Text>
-                      <Text style={[styles.tableHeading, { width: 125 }]}>
-                        TYPE
-                      </Text>
-                      <Text style={[styles.tableHeading, { width: 155 }]}>
-                        CURRENT STAGE
-                      </Text>
-                      <Text style={[styles.tableHeading, { width: 150 }]}>
-                        PROGRESS
-                      </Text>
-                      <Text style={[styles.tableHeading, { width: 140 }]}>
-                        STATUS
-                      </Text>
-                    </View>
-
-                    {projects.map((project) => (
-                      <View key={project.code} style={styles.tableRow}>
-                        <View style={{ width: 245 }}>
-                          <Text style={styles.projectName}>{project.name}</Text>
-                          <Text style={styles.projectCode}>{project.code}</Text>
-                        </View>
-
-                        <Text style={[styles.tableCell, { width: 125 }]}>
-                          {project.type}
-                        </Text>
-
-                        <Text style={[styles.tableCell, { width: 155 }]}>
-                          {project.stage}
-                        </Text>
-
-                        <View style={{ width: 150, paddingRight: 22 }}>
-                          <View style={styles.progressTrack}>
-                            <View
-                              style={[
-                                styles.progressFill,
-                                { width: `${project.progress}%` },
-                              ]}
-                            />
-                          </View>
-                          <Text style={styles.progressText}>
-                            {project.progress}%
-                          </Text>
-                        </View>
-
-                        <View style={{ width: 140 }}>
-                          <StatusBadge status={project.status} />
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                </ScrollView>
-              </View>
-
-              {/* ACTIVITY */}
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <View>
-                    <Text style={styles.sectionTitle}>Recent Activity</Text>
-                    <Text style={styles.sectionSubtitle}>
-                      Latest updates across your workspace
-                    </Text>
-                  </View>
-                </View>
-
-                {activities.map((activity, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      styles.activityRow,
-                      index === activities.length - 1 && {
-                        borderBottomWidth: 0,
-                      },
-                    ]}
-                  >
-                    <View style={styles.activityIcon}>
-                      <Ionicons
-                        name={activity.icon}
-                        size={20}
-                        color={COLORS.orange}
-                      />
-                    </View>
-
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.activityTitle}>{activity.title}</Text>
-                      <Text style={styles.activityDetail}>
-                        {activity.detail}
-                      </Text>
-                    </View>
-
-                    <Text style={styles.activityTime}>{activity.time}</Text>
-                  </View>
-                ))}
-              </View>
-            </>
+            <PersonalizedDashboard onNavigate={handleNav} />
           ) : activeNav === "Projects" ? (
             <ProjectsWorkspace />
           ) : activeNav === "My Tasks" ? (
@@ -451,6 +299,12 @@ function DashboardContent() {
           )}
         </ScrollView>
       </View>
+
+      <PivotAIPanel
+        visible={aiOpen}
+        onClose={() => setAiOpen(false)}
+        activeWorkspace={activeNav}
+      />
 
       {/* MOBILE SIDEBAR */}
       {!isDesktop && sidebarOpen && (
@@ -535,6 +389,28 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: "700",
   },
+  aiLauncher: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#303C45",
+    borderWidth: 1,
+    borderColor: "#4A4E4D",
+    borderRadius: 11,
+    padding: 11,
+    marginBottom: 20,
+  },
+  aiLauncherActive: { borderColor: COLORS.orange },
+  aiLauncherIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    backgroundColor: "#463C35",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  aiLauncherTitle: { color: COLORS.white, fontWeight: "800", fontSize: 13 },
+  aiLauncherSub: { color: "#9CAAB3", fontSize: 10, marginTop: 3 },
   sidebarBottom: {
     borderTopWidth: 1,
     borderTopColor: "#35414A",

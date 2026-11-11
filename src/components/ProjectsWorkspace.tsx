@@ -1,23 +1,23 @@
 import type {
-    Event,
-    Project,
-    Status,
-    TaskStatus,
+  Event,
+  Project,
+  Status,
+  TaskStatus,
 } from "@/context/ProjectsContext";
 import { stages, useProjects } from "@/context/ProjectsContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useWindowDimensions,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
 } from "react-native";
 
 const C = {
@@ -66,6 +66,11 @@ export default function ProjectsWorkspace() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskAssignee, setTaskAssignee] = useState("");
   const [taskError, setTaskError] = useState("");
+  type StageAction = "submit" | "approve" | "reject";
+
+  const [stageAction, setStageAction] = useState<StageAction | null>(null);
+  const [stageNote, setStageNote] = useState("");
+  const [stageNoteError, setStageNoteError] = useState("");
   const selected = projects.find((p) => p.id === selectedId) ?? null;
   const filtered = useMemo(
     () =>
@@ -130,42 +135,111 @@ export default function ProjectsWorkspace() {
     setTaskAssignee("");
     setTaskError("");
   };
-  const requestReview = () => {
-    if (!selected) return;
+
+  const openStageModal = (action: StageAction) => {
+    setStageAction(action);
+    setStageNote("");
+    setStageNoteError("");
+  };
+
+  const closeStageModal = () => {
+    setStageAction(null);
+    setStageNote("");
+    setStageNoteError("");
+  };
+
+  const formatStageEvent = (message: string, note: string) => {
+    const trimmed = note.trim();
+
+    return trimmed ? `${message}\nNote: ${trimmed}` : message;
+  };
+
+  const requestReview = (note = "") => {
+    if (
+      !selected ||
+      selected.status === "Blocked" ||
+      selected.status === "Completed"
+    )
+      return;
+
     editProject(selected.id, (p) => ({
       ...p,
       status: "Needs Review",
-      events: record(p, `${stages[p.stageIndex]} submitted for approval`),
+      events: record(
+        p,
+        formatStageEvent(
+          `${stages[p.stageIndex]} submitted for approval`,
+          note,
+        ),
+      ),
     }));
   };
-  const approve = () => {
+
+  const approve = (note = "") => {
     if (!selected || selected.status !== "Needs Review") return;
+
     editProject(selected.id, (p) => {
       const final = p.stageIndex === stages.length - 1;
+
+      const message = final
+        ? "Closeout approved — project completed"
+        : `${stages[p.stageIndex]} approved; advanced to ${
+            stages[p.stageIndex + 1]
+          }`;
+
       return {
         ...p,
         stageIndex: final ? p.stageIndex : p.stageIndex + 1,
         status: final ? "Completed" : "In Progress",
-        events: record(
-          p,
-          final
-            ? "Closeout approved — project completed"
-            : `${stages[p.stageIndex]} approved; advanced to ${stages[p.stageIndex + 1]}`,
-        ),
+        events: record(p, formatStageEvent(message, note)),
       };
     });
   };
-  const reject = () => {
+
+  const reject = (note = "") => {
     if (!selected || selected.status !== "Needs Review") return;
+
     editProject(selected.id, (p) => {
       const index = Math.max(0, p.stageIndex - 1);
+
       return {
         ...p,
         stageIndex: index,
         status: "In Progress",
-        events: record(p, `Approval rejected; returned to ${stages[index]}`),
+        events: record(
+          p,
+          formatStageEvent(
+            `Approval rejected; returned to ${stages[index]}`,
+            note,
+          ),
+        ),
       };
     });
+  };
+
+  const confirmStageAction = () => {
+    if (!stageAction) return;
+
+    if (stageAction === "reject" && !stageNote.trim()) {
+      setStageNoteError("Please explain why this stage is being rejected.");
+      return;
+    }
+
+    const note = stageNote.trim();
+
+    switch (stageAction) {
+      case "submit":
+        requestReview(note);
+        break;
+      case "approve":
+        approve(note);
+        break;
+      case "reject":
+        reject(note);
+        break;
+    }
+
+    closeStageModal();
   };
   const createProject = () => {
     if (!form.name.trim()) {
@@ -377,13 +451,13 @@ export default function ProjectsWorkspace() {
                   <>
                     <TouchableOpacity
                       style={[s.outlineButton, mobile && s.actionButtonMobile]}
-                      onPress={reject}
+                      onPress={() => openStageModal("reject")}
                     >
                       <Text style={s.outlineText}>Reject & Return</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[s.primaryButton, mobile && s.actionButtonMobile]}
-                      onPress={approve}
+                      onPress={() => openStageModal("approve")}
                     >
                       <Ionicons name="checkmark" size={17} color="#FFF" />
                       <Text style={s.primaryText}>Approve Stage</Text>
@@ -415,7 +489,7 @@ export default function ProjectsWorkspace() {
                         mobile && s.actionButtonMobile,
                       ]}
                       disabled={selected.status === "Blocked"}
-                      onPress={requestReview}
+                      onPress={() => openStageModal("submit")}
                     >
                       <Text style={s.primaryText}>Request Approval</Text>
                     </TouchableOpacity>
@@ -526,7 +600,10 @@ export default function ProjectsWorkspace() {
                   <View key={event.id} style={s.activityRow}>
                     <View style={s.activityDot} />
                     <View style={{ flex: 1 }}>
-                      <Text style={s.taskTitle}>{event.message}</Text>
+                      <Text style={[s.taskTitle, { lineHeight: 20 }]}>
+                        {event.message}
+                      </Text>
+
                       <Text style={s.taskMeta}>{event.date}</Text>
                     </View>
                   </View>
@@ -744,6 +821,152 @@ export default function ProjectsWorkspace() {
           </View>
         </>
       )}
+      {/* STAGE CHANGE NOTE MODAL */}
+      <Modal
+        visible={stageAction !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={closeStageModal}
+        statusBarTranslucent
+      >
+        <KeyboardAvoidingView
+          style={s.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <TouchableOpacity
+            style={s.modalBackdrop}
+            activeOpacity={1}
+            onPress={closeStageModal}
+          />
+
+          <View
+            style={[
+              s.modal,
+              mobile && s.mobileModal,
+              {
+                maxWidth: 520,
+                maxHeight: mobile ? height - 24 : height * 0.9,
+              },
+            ]}
+          >
+            <View style={s.modalHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.eyebrow}>DEVELOPMENT WORKFLOW</Text>
+
+                <Text style={s.modalTitle}>
+                  {stageAction === "submit"
+                    ? "Submit Stage for Approval"
+                    : stageAction === "approve"
+                      ? "Approve Stage"
+                      : "Reject & Return"}
+                </Text>
+              </View>
+
+              <TouchableOpacity onPress={closeStageModal}>
+                <Ionicons name="close" size={24} color={C.dark} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={{ flexShrink: 1 }}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={s.modalBody}
+            >
+              <View style={s.stageNoteSummary}>
+                <Text style={s.stageNoteProject}>
+                  {selected?.name ?? "Project"}
+                </Text>
+
+                <Text style={s.stageNoteDescription}>
+                  {stageAction === "submit"
+                    ? `Submit ${stages[selected?.stageIndex ?? 0]} for review`
+                    : stageAction === "approve"
+                      ? selected?.stageIndex === stages.length - 1
+                        ? "Approve Closeout and complete the project"
+                        : `Advance from ${
+                            stages[selected?.stageIndex ?? 0]
+                          } to ${stages[(selected?.stageIndex ?? 0) + 1]}`
+                      : `Return from ${stages[selected?.stageIndex ?? 0]} to ${
+                          stages[Math.max(0, (selected?.stageIndex ?? 0) - 1)]
+                        }`}
+                </Text>
+              </View>
+
+              <Text style={s.inputLabel}>
+                {stageAction === "reject"
+                  ? "Reason for rejection *"
+                  : "Stage change note (optional)"}
+              </Text>
+
+              <TextInput
+                style={[s.input, s.stageNoteInput]}
+                value={stageNote}
+                onChangeText={(text) => {
+                  setStageNote(text);
+                  setStageNoteError("");
+                }}
+                multiline
+                textAlignVertical="top"
+                placeholder={
+                  stageAction === "reject"
+                    ? "Explain what needs to be corrected before this stage can proceed..."
+                    : stageAction === "approve"
+                      ? "Add any comments about this approval..."
+                      : "Describe what has been completed and why this stage is ready for review..."
+                }
+                placeholderTextColor="#A1A9AE"
+              />
+
+              {stageNoteError ? (
+                <Text style={[s.error, { marginTop: 8 }]}>
+                  {stageNoteError}
+                </Text>
+              ) : null}
+
+              <Text style={s.stageNoteHint}>
+                This note will be recorded in the project's Activity History.
+              </Text>
+
+              <View style={s.formActions}>
+                <TouchableOpacity
+                  style={s.cancelButton}
+                  onPress={closeStageModal}
+                >
+                  <Text style={s.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    s.primaryButton,
+                    stageAction === "reject" && {
+                      backgroundColor: C.red,
+                    },
+                  ]}
+                  onPress={confirmStageAction}
+                >
+                  <Ionicons
+                    name={
+                      stageAction === "reject"
+                        ? "arrow-undo-outline"
+                        : "checkmark"
+                    }
+                    size={17}
+                    color="#FFF"
+                  />
+
+                  <Text style={s.primaryText}>
+                    {stageAction === "submit"
+                      ? "Submit for Approval"
+                      : stageAction === "approve"
+                        ? "Confirm Approval"
+                        : "Confirm Rejection"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
       <Modal
         visible={creating}
         transparent
@@ -1227,5 +1450,38 @@ const s = StyleSheet.create({
     width: "100%",
     alignSelf: "stretch",
     justifyContent: "center",
+  },
+  stageNoteSummary: {
+    backgroundColor: "#FAF8F5",
+    borderRadius: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+
+  stageNoteProject: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: C.dark,
+    marginBottom: 6,
+  },
+
+  stageNoteDescription: {
+    fontSize: 12,
+    lineHeight: 19,
+    color: C.muted,
+  },
+
+  stageNoteInput: {
+    minHeight: 125,
+    paddingTop: 14,
+    textAlignVertical: "top",
+  },
+
+  stageNoteHint: {
+    fontSize: 11,
+    color: C.muted,
+    marginTop: 10,
+    lineHeight: 17,
   },
 });
