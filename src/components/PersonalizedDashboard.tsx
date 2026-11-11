@@ -137,7 +137,10 @@ function MetricCards({
           key={m.label}
           style={[
             s.metricCard,
-            { width: mobile ? "100%" : compact ? "48.5%" : "23.7%" },
+            {
+              width: mobile ? "48%" : compact ? "48.5%" : "23.7%",
+              minWidth: 0,
+            },
           ]}
         >
           <View style={s.metricHeader}>
@@ -536,13 +539,17 @@ export default function PersonalizedDashboard({ onNavigate }: Props) {
               },
             ];
 
+  // Explicit dimensions prevent React Native Web flex children from overlapping
+  // when the two-column dashboard collapses on narrow screens.
   const columns = [s.columns, compact && s.columnsCompact];
-  const columnPanel = [s.columnPanel, compact && s.fullWidth];
+  const columnPanel = compact ? s.fullWidth : s.columnPanel;
 
   return (
     <View style={s.root}>
       <View style={[s.heading, mobile && s.headingMobile]}>
-        <View style={{ flex: 1, minWidth: 220 }}>
+        <View
+          style={{ flex: 1, minWidth: 0, width: mobile ? "100%" : undefined }}
+        >
           <Text style={s.eyebrow}>
             {role === "executive"
               ? "EXECUTIVE INTELLIGENCE"
@@ -555,7 +562,7 @@ export default function PersonalizedDashboard({ onNavigate }: Props) {
           <Text style={s.title}>Good morning, {info.person}.</Text>
           <Text style={s.subtitle}>{info.description}</Text>
         </View>
-        <View style={s.rolePicker}>
+        <View style={[s.rolePicker, mobile && s.rolePickerMobile]}>
           <Text style={s.roleLabel}>DEMO · VIEW AS</Text>
           <View style={s.roleOptions}>
             {ROLES.map((r) => (
@@ -877,7 +884,7 @@ export default function PersonalizedDashboard({ onNavigate }: Props) {
 }
 
 const s = StyleSheet.create({
-  root: { gap: 22 },
+  root: { gap: 22, width: "100%", minWidth: 0 },
   heading: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -895,6 +902,7 @@ const s = StyleSheet.create({
   title: { color: C.dark, fontSize: 27, fontWeight: "800" },
   subtitle: { color: C.muted, fontSize: 13, marginTop: 8, lineHeight: 20 },
   rolePicker: { maxWidth: 520, width: "100%", flexShrink: 1 },
+  rolePickerMobile: { maxWidth: undefined, flexShrink: 0 },
   roleLabel: {
     fontSize: 10,
     fontWeight: "800",
@@ -921,11 +929,12 @@ const s = StyleSheet.create({
     rowGap: 12,
   },
   metricCard: {
+    minWidth: 0,
     backgroundColor: C.white,
     borderWidth: 1,
     borderColor: C.border,
     borderRadius: 12,
-    padding: 19,
+    padding: 14,
     minHeight: 135,
   },
   metricHeader: {
@@ -941,22 +950,37 @@ const s = StyleSheet.create({
     flexShrink: 1,
   },
   metricValue: {
-    fontSize: 30,
+    fontSize: 27,
     fontWeight: "800",
     color: C.dark,
     marginTop: 14,
   },
   metricSubtitle: { fontSize: 11, color: C.muted, marginTop: 6 },
-  columns: { flexDirection: "row", gap: 18, alignItems: "flex-start" },
-  columnsCompact: { flexDirection: "column" },
+  columns: {
+    flexDirection: "row",
+    gap: 18,
+    alignItems: "stretch",
+    width: "100%",
+    minWidth: 0,
+  },
+  columnsCompact: { flexDirection: "column", alignItems: "stretch" },
   columnPanel: { flex: 1, minWidth: 0 },
-  fullWidth: { width: "100%", flex: 0 },
+  fullWidth: {
+    width: "100%",
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
+    minWidth: 0,
+    alignSelf: "stretch",
+  },
   panel: {
     backgroundColor: C.white,
     borderWidth: 1,
     borderColor: C.border,
     borderRadius: 12,
     overflow: "hidden",
+    width: "100%",
+    minWidth: 0,
   },
   panelHeader: {
     padding: 21,
@@ -967,7 +991,13 @@ const s = StyleSheet.create({
   },
   panelTitle: { fontSize: 16, fontWeight: "800", color: C.dark },
   panelSubtitle: { fontSize: 12, color: C.muted, marginTop: 5 },
-  chartBody: { paddingHorizontal: 21, paddingBottom: 21, gap: 14 },
+  chartBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 21,
+    gap: 14,
+    width: "100%",
+    minWidth: 0,
+  },
   chartHeadline: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -981,18 +1011,20 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     height: 190,
-    gap: 9,
+    width: "100%",
+    gap: 4,
   },
   barColumn: {
     flex: 1,
-    height: "100%",
+    minWidth: 0,
+    height: 190,
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 6,
   },
   barSpace: {
     width: "100%",
-    flex: 1,
+    height: 145,
     justifyContent: "flex-end",
     alignItems: "center",
     borderBottomWidth: 1,
@@ -1008,7 +1040,7 @@ const s = StyleSheet.create({
   barLabel: { fontSize: 10, color: C.muted },
   demoCaption: { color: C.muted, fontSize: 10, lineHeight: 16, marginTop: 4 },
   horizontalBarRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  horizontalLabel: { width: 113, color: C.muted, fontSize: 11 },
+  horizontalLabel: { width: 100, color: C.muted, fontSize: 11, flexShrink: 1 },
   horizontalValue: {
     width: 20,
     textAlign: "right",

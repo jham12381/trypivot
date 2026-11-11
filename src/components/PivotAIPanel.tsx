@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
     StyleSheet,
@@ -278,288 +279,293 @@ export default function PivotAIPanel({
     setPendingScenario(null);
   };
 
-  return (
-    <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
-      {mobile && visible && (
-        <TouchableOpacity
-          style={styles.backdrop}
-          onPress={onClose}
-          activeOpacity={1}
-        />
-      )}
-
-      <Animated.View
-        style={[
-          styles.panel,
-          {
-            width: panelWidth,
-            transform: [{ translateX }],
-          },
-        ]}
+  // Render mobile in a native Modal so the dashboard/sidebar cannot clip
+  // or constrain the AI panel. Desktop retains the existing slide-out.
+  const panel = (
+    <Animated.View
+      style={[
+        styles.panel,
+        mobile && styles.mobilePanel,
+        {
+          width: mobile ? "100%" : panelWidth,
+          transform: [{ translateX: mobile ? 0 : translateX }],
+        },
+      ]}
+    >
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <KeyboardAvoidingView
+        {/* HEADER */}
+        <View style={styles.header}>
+          <View style={styles.headingLeft}>
+            <View style={styles.sparkleIcon}>
+              <Ionicons name="sparkles" size={20} color={C.orange} />
+            </View>
+
+            <View>
+              <Text style={styles.title}>Pivot AI</Text>
+              <Text style={styles.subtitle}>
+                Your project operations assistant
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              onPress={reset}
+              accessibilityLabel="Reset demo"
+              style={styles.iconButton}
+            >
+              <Ionicons name="refresh-outline" size={19} color={C.muted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={onClose}
+              accessibilityLabel="Close Pivot AI"
+              style={styles.iconButton}
+            >
+              <Ionicons name="close" size={23} color={C.muted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* DEMO INDICATOR */}
+        <View style={styles.demoBar}>
+          <Ionicons name="flask-outline" size={14} color={C.orange} />
+          <Text style={styles.demoText}>DEMO MODE · SIMULATED ACTIONS</Text>
+        </View>
+
+        {/* CONVERSATION */}
+        <ScrollView
+          ref={scrollRef}
           style={styles.flex}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          contentContainerStyle={styles.conversation}
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() =>
+            scrollRef.current?.scrollToEnd({
+              animated: true,
+            })
+          }
         >
-          {/* HEADER */}
-          <View style={styles.header}>
-            <View style={styles.headingLeft}>
-              <View style={styles.sparkleIcon}>
-                <Ionicons name="sparkles" size={20} color={C.orange} />
+          {messages.length === 0 ? (
+            <View>
+              <View style={styles.welcomeIcon}>
+                <Ionicons name="sparkles-outline" size={27} color={C.orange} />
               </View>
 
-              <View>
-                <Text style={styles.title}>Pivot AI</Text>
-                <Text style={styles.subtitle}>
-                  Your project operations assistant
-                </Text>
-              </View>
+              <Text style={styles.welcomeTitle}>What can I help you with?</Text>
+
+              <Text style={styles.welcomeText}>
+                Turn everyday project updates into organized actions. Choose a
+                demo scenario or type your own note.
+              </Text>
+
+              <Text style={styles.sectionLabel}>TRY A DEMO SCENARIO</Text>
+
+              {PROMPTS.map((item) => (
+                <TouchableOpacity
+                  key={item.title}
+                  style={styles.suggestion}
+                  onPress={() => submit(item.text)}
+                >
+                  <View style={styles.suggestionCopy}>
+                    <Text style={styles.suggestionTitle}>{item.title}</Text>
+
+                    <Text style={styles.suggestionDetail}>{item.text}</Text>
+                  </View>
+
+                  <Ionicons name="arrow-forward" size={16} color={C.orange} />
+                </TouchableOpacity>
+              ))}
             </View>
-
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                onPress={reset}
-                accessibilityLabel="Reset demo"
-                style={styles.iconButton}
-              >
-                <Ionicons name="refresh-outline" size={19} color={C.muted} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={onClose}
-                accessibilityLabel="Close Pivot AI"
-                style={styles.iconButton}
-              >
-                <Ionicons name="close" size={23} color={C.muted} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* DEMO INDICATOR */}
-          <View style={styles.demoBar}>
-            <Ionicons name="flask-outline" size={14} color={C.orange} />
-            <Text style={styles.demoText}>DEMO MODE · SIMULATED ACTIONS</Text>
-          </View>
-
-          {/* CONVERSATION */}
-          <ScrollView
-            ref={scrollRef}
-            style={styles.flex}
-            contentContainerStyle={styles.conversation}
-            keyboardShouldPersistTaps="handled"
-            onContentSizeChange={() =>
-              scrollRef.current?.scrollToEnd({
-                animated: true,
-              })
-            }
-          >
-            {messages.length === 0 ? (
-              <View>
-                <View style={styles.welcomeIcon}>
-                  <Ionicons
-                    name="sparkles-outline"
-                    size={27}
-                    color={C.orange}
-                  />
-                </View>
-
-                <Text style={styles.welcomeTitle}>
-                  What can I help you with?
-                </Text>
-
-                <Text style={styles.welcomeText}>
-                  Turn everyday project updates into organized actions. Choose a
-                  demo scenario or type your own note.
-                </Text>
-
-                <Text style={styles.sectionLabel}>TRY A DEMO SCENARIO</Text>
-
-                {PROMPTS.map((item) => (
-                  <TouchableOpacity
-                    key={item.title}
-                    style={styles.suggestion}
-                    onPress={() => submit(item.text)}
-                  >
-                    <View style={styles.suggestionCopy}>
-                      <Text style={styles.suggestionTitle}>{item.title}</Text>
-
-                      <Text style={styles.suggestionDetail}>{item.text}</Text>
+          ) : (
+            <View style={styles.messages}>
+              {messages.map((message) => (
+                <View
+                  key={message.id}
+                  style={
+                    message.role === "user"
+                      ? styles.userBubble
+                      : styles.assistantMessage
+                  }
+                >
+                  {message.role === "assistant" && (
+                    <View style={styles.assistantLabel}>
+                      <Ionicons name="sparkles" size={13} color={C.orange} />
+                      <Text style={styles.assistantLabelText}>
+                        PIVOT AI · DEMO
+                      </Text>
                     </View>
+                  )}
 
-                    <Ionicons name="arrow-forward" size={16} color={C.orange} />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              <View style={styles.messages}>
-                {messages.map((message) => (
-                  <View
-                    key={message.id}
-                    style={
-                      message.role === "user"
-                        ? styles.userBubble
-                        : styles.assistantMessage
-                    }
-                  >
-                    {message.role === "assistant" && (
-                      <View style={styles.assistantLabel}>
-                        <Ionicons name="sparkles" size={13} color={C.orange} />
-                        <Text style={styles.assistantLabelText}>
-                          PIVOT AI · DEMO
-                        </Text>
-                      </View>
-                    )}
+                  <Text style={styles.messageText}>{message.text}</Text>
 
-                    <Text style={styles.messageText}>{message.text}</Text>
+                  {message.actions && (
+                    <View style={styles.actionCard}>
+                      <Text style={styles.actionHeading}>PROPOSED ACTIONS</Text>
 
-                    {message.actions && (
-                      <View style={styles.actionCard}>
-                        <Text style={styles.actionHeading}>
-                          PROPOSED ACTIONS
-                        </Text>
+                      {message.actions.map((action) => (
+                        <TouchableOpacity
+                          key={action.id}
+                          disabled={message.approved}
+                          onPress={() => toggleAction(message.id, action.id)}
+                          style={styles.actionRow}
+                        >
+                          <Ionicons
+                            name={
+                              action.selected ? "checkbox" : "square-outline"
+                            }
+                            size={23}
+                            color={action.selected ? C.orange : C.muted}
+                          />
 
-                        {message.actions.map((action) => (
-                          <TouchableOpacity
-                            key={action.id}
-                            disabled={message.approved}
-                            onPress={() => toggleAction(message.id, action.id)}
-                            style={styles.actionRow}
-                          >
-                            <Ionicons
-                              name={
-                                action.selected ? "checkbox" : "square-outline"
-                              }
-                              size={23}
-                              color={action.selected ? C.orange : C.muted}
-                            />
+                          <View style={styles.actionCopy}>
+                            <Text style={styles.actionTitle}>
+                              {action.title}
+                            </Text>
 
-                            <View style={styles.actionCopy}>
-                              <Text style={styles.actionTitle}>
-                                {action.title}
-                              </Text>
-
-                              <Text style={styles.actionDetail}>
-                                {action.detail}
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
-
-                        {message.approved ? (
-                          <View style={styles.approvedRow}>
-                            <Ionicons
-                              name="checkmark-circle"
-                              size={18}
-                              color={C.green}
-                            />
-                            <Text style={styles.approvedText}>
-                              Simulation approved
+                            <Text style={styles.actionDetail}>
+                              {action.detail}
                             </Text>
                           </View>
-                        ) : (
-                          <TouchableOpacity
-                            disabled={
-                              !message.actions.some((action) => action.selected)
-                            }
-                            onPress={() => approve(message.id)}
-                            style={[
-                              styles.approveButton,
-                              !message.actions.some(
-                                (action) => action.selected,
-                              ) && styles.disabled,
-                            ]}
-                          >
-                            <Text style={styles.approveText}>
-                              Approve selected actions
-                            </Text>
+                        </TouchableOpacity>
+                      ))}
 
-                            <Ionicons
-                              name="arrow-forward"
-                              size={16}
-                              color={C.white}
-                            />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    )}
-                  </View>
-                ))}
+                      {message.approved ? (
+                        <View style={styles.approvedRow}>
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={18}
+                            color={C.green}
+                          />
+                          <Text style={styles.approvedText}>
+                            Simulation approved
+                          </Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          disabled={
+                            !message.actions.some((action) => action.selected)
+                          }
+                          onPress={() => approve(message.id)}
+                          style={[
+                            styles.approveButton,
+                            !message.actions.some(
+                              (action) => action.selected,
+                            ) && styles.disabled,
+                          ]}
+                        >
+                          <Text style={styles.approveText}>
+                            Approve selected actions
+                          </Text>
 
-                {thinking && (
-                  <View style={styles.thinkingRow}>
-                    <Ionicons name="sparkles" size={15} color={C.orange} />
-                    <Text style={styles.thinkingText}>
-                      Pivot AI is reviewing your update…
-                    </Text>
-                  </View>
-                )}
+                          <Ionicons
+                            name="arrow-forward"
+                            size={16}
+                            color={C.white}
+                          />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
+                </View>
+              ))}
 
-                {!thinking && (
-                  <View style={styles.quickPrompts}>
-                    {PROMPTS.map((item) => (
-                      <TouchableOpacity
-                        key={item.title}
-                        onPress={() => submit(item.text)}
-                        style={styles.quickPrompt}
-                      >
-                        <Text style={styles.quickPromptText}>{item.title}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-            )}
-          </ScrollView>
+              {thinking && (
+                <View style={styles.thinkingRow}>
+                  <Ionicons name="sparkles" size={15} color={C.orange} />
+                  <Text style={styles.thinkingText}>
+                    Pivot AI is reviewing your update…
+                  </Text>
+                </View>
+              )}
 
-          {/* MESSAGE COMPOSER */}
-          <View style={styles.composerArea}>
-            <Text style={styles.context}>
-              CURRENT WORKSPACE · {activeWorkspace.toUpperCase()}
-            </Text>
+              {!thinking && (
+                <View style={styles.quickPrompts}>
+                  {PROMPTS.map((item) => (
+                    <TouchableOpacity
+                      key={item.title}
+                      onPress={() => submit(item.text)}
+                      style={styles.quickPrompt}
+                    >
+                      <Text style={styles.quickPromptText}>{item.title}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+        </ScrollView>
 
-            <View style={styles.composer}>
-              <TextInput
-                style={styles.input}
-                value={draft}
-                onChangeText={setDraft}
-                placeholder="Type a project update or ask Pivot..."
-                placeholderTextColor="#9CA3A9"
-                multiline
-                textAlignVertical="top"
-                accessibilityLabel="Pivot AI message"
-                onKeyPress={(e) => {
-                  if (Platform.OS !== "web") return;
+        {/* MESSAGE COMPOSER */}
+        <View style={styles.composerArea}>
+          <Text style={styles.context}>
+            CURRENT WORKSPACE · {activeWorkspace.toUpperCase()}
+          </Text>
 
-                  const event = e.nativeEvent as typeof e.nativeEvent & {
-                    shiftKey?: boolean;
-                    preventDefault?: () => void;
-                  };
+          <View style={styles.composer}>
+            <TextInput
+              style={styles.input}
+              value={draft}
+              onChangeText={setDraft}
+              placeholder="Type a project update or ask Pivot..."
+              placeholderTextColor="#9CA3A9"
+              multiline
+              textAlignVertical="top"
+              accessibilityLabel="Pivot AI message"
+              onKeyPress={(e) => {
+                if (Platform.OS !== "web") return;
 
-                  if (event.key === "Enter" && !event.shiftKey) {
-                    event.preventDefault?.();
-                    submit();
-                  }
-                }}
-              />
-              <View style={styles.composerBottom}>
-                <Text style={styles.helper}>Sample responses · No live AI</Text>
+                const event = e.nativeEvent as typeof e.nativeEvent & {
+                  shiftKey?: boolean;
+                  preventDefault?: () => void;
+                };
 
-                <TouchableOpacity
-                  onPress={() => submit()}
-                  disabled={!draft.trim() || thinking}
-                  style={[
-                    styles.send,
-                    (!draft.trim() || thinking) && styles.disabled,
-                  ]}
-                  accessibilityLabel="Submit demo message"
-                >
-                  <Ionicons name="arrow-up" size={19} color={C.white} />
-                </TouchableOpacity>
-              </View>
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault?.();
+                  submit();
+                }
+              }}
+            />
+            <View style={styles.composerBottom}>
+              <Text style={styles.helper}>Sample responses · No live AI</Text>
+
+              <TouchableOpacity
+                onPress={() => submit()}
+                disabled={!draft.trim() || thinking}
+                style={[
+                  styles.send,
+                  (!draft.trim() || thinking) && styles.disabled,
+                ]}
+                accessibilityLabel="Submit demo message"
+              >
+                <Ionicons name="arrow-up" size={19} color={C.white} />
+              </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </Animated.View>
+        </View>
+      </KeyboardAvoidingView>
+    </Animated.View>
+  );
+
+  if (mobile) {
+    return (
+      <Modal
+        visible={visible}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={onClose}
+        statusBarTranslucent={false}
+      >
+        <View style={styles.mobileModal}>{panel}</View>
+      </Modal>
+    );
+  }
+
+  return (
+    <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+      {panel}
     </View>
   );
 }
@@ -569,9 +575,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  backdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(18,28,35,0.45)",
+  mobileModal: {
+    flex: 1,
+    backgroundColor: C.white,
+  },
+  mobilePanel: {
+    position: "relative",
+    top: undefined,
+    bottom: undefined,
+    right: undefined,
+    flex: 1,
+    borderLeftWidth: 0,
+    elevation: 0,
+    shadowOpacity: 0,
   },
 
   panel: {
