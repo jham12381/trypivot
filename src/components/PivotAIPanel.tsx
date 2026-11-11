@@ -1,5 +1,14 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Sparkles } from "lucide-react-native";
+import {
+    ArrowRight,
+    ArrowUp,
+    CircleCheck,
+    FlaskConical,
+    RefreshCw,
+    Sparkles,
+    Square,
+    SquareCheck,
+    X,
+} from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
@@ -318,7 +327,7 @@ export default function PivotAIPanel({
               accessibilityLabel="Reset demo"
               style={styles.iconButton}
             >
-              <Ionicons name="refresh-outline" size={19} color={C.muted} />
+              <RefreshCw size={19} color={C.muted} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -326,14 +335,14 @@ export default function PivotAIPanel({
               accessibilityLabel="Close Pivot AI"
               style={styles.iconButton}
             >
-              <Ionicons name="close" size={23} color={C.muted} />
+              <X size={23} color={C.muted} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* DEMO INDICATOR */}
         <View style={styles.demoBar}>
-          <Ionicons name="flask-outline" size={14} color={C.orange} />
+          <FlaskConical size={14} color={C.orange} />
           <Text style={styles.demoText}>DEMO MODE · SIMULATED ACTIONS</Text>
         </View>
 
@@ -352,7 +361,7 @@ export default function PivotAIPanel({
           {messages.length === 0 ? (
             <View>
               <View style={styles.welcomeIcon}>
-                <Ionicons name="sparkles-outline" size={27} color={C.orange} />
+                <Sparkles size={27} color={C.orange} />
               </View>
 
               <Text style={styles.welcomeTitle}>What can I help you with?</Text>
@@ -376,7 +385,7 @@ export default function PivotAIPanel({
                     <Text style={styles.suggestionDetail}>{item.text}</Text>
                   </View>
 
-                  <Ionicons name="arrow-forward" size={16} color={C.orange} />
+                  <ArrowRight size={16} color={C.orange} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -393,7 +402,7 @@ export default function PivotAIPanel({
                 >
                   {message.role === "assistant" && (
                     <View style={styles.assistantLabel}>
-                      <Ionicons name="sparkles" size={13} color={C.orange} />
+                      <Sparkles size={13} color={C.orange} />
                       <Text style={styles.assistantLabelText}>
                         PIVOT AI · DEMO
                       </Text>
@@ -413,13 +422,11 @@ export default function PivotAIPanel({
                           onPress={() => toggleAction(message.id, action.id)}
                           style={styles.actionRow}
                         >
-                          <Ionicons
-                            name={
-                              action.selected ? "checkbox" : "square-outline"
-                            }
-                            size={23}
-                            color={action.selected ? C.orange : C.muted}
-                          />
+                          {action.selected ? (
+                            <SquareCheck size={23} color={C.orange} />
+                          ) : (
+                            <Square size={23} color={C.muted} />
+                          )}
 
                           <View style={styles.actionCopy}>
                             <Text style={styles.actionTitle}>
@@ -435,11 +442,7 @@ export default function PivotAIPanel({
 
                       {message.approved ? (
                         <View style={styles.approvedRow}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={18}
-                            color={C.green}
-                          />
+                          <CircleCheck size={18} color={C.green} />
                           <Text style={styles.approvedText}>
                             Simulation approved
                           </Text>
@@ -461,11 +464,7 @@ export default function PivotAIPanel({
                             Approve selected actions
                           </Text>
 
-                          <Ionicons
-                            name="arrow-forward"
-                            size={16}
-                            color={C.white}
-                          />
+                          <ArrowRight size={16} color={C.white} />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -475,7 +474,7 @@ export default function PivotAIPanel({
 
               {thinking && (
                 <View style={styles.thinkingRow}>
-                  <Ionicons name="sparkles" size={15} color={C.orange} />
+                  <Sparkles size={15} color={C.orange} />
                   <Text style={styles.thinkingText}>
                     Pivot AI is reviewing your update…
                   </Text>
@@ -541,7 +540,7 @@ export default function PivotAIPanel({
                 ]}
                 accessibilityLabel="Submit demo message"
               >
-                <Ionicons name="arrow-up" size={19} color={C.white} />
+                <ArrowUp size={19} color={C.white} />
               </TouchableOpacity>
             </View>
           </View>

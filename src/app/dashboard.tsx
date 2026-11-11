@@ -1,6 +1,23 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import {
+    Bell,
+    Building2,
+    ChevronRight,
+    CircleCheck,
+    FileText,
+    Folder,
+    Layers,
+    LayoutDashboard,
+    ListTodo,
+    LogOut,
+    MessageCircle,
+    Settings,
+    Sparkles,
+    Users,
+    Workflow,
+    type LucideIcon,
+} from "lucide-react-native";
+import { useState } from "react";
 import {
     ScrollView,
     StyleSheet,
@@ -21,7 +38,6 @@ import WorkflowsWorkspace from "@/components/WorkflowsWorkspace";
 import { DocumentsProvider } from "@/context/DocumentsContext";
 import { ProjectsProvider } from "@/context/ProjectsContext";
 import { TeamProvider } from "@/context/TeamContext";
-import { useFonts } from "expo-font";
 
 const COLORS = {
   sidebar: "#202A32",
@@ -37,7 +53,7 @@ const COLORS = {
   red: "#C45C55",
 };
 
-type IconName = React.ComponentProps<typeof Ionicons>["name"];
+type IconName = LucideIcon;
 
 type NavItem = {
   label: string;
@@ -45,13 +61,13 @@ type NavItem = {
 };
 
 const navigation: NavItem[] = [
-  { label: "Dashboard", icon: "grid-outline" },
-  { label: "Projects", icon: "business-outline" },
-  { label: "My Tasks", icon: "checkbox-outline" },
-  { label: "Workflows", icon: "git-network-outline" },
-  { label: "Documents", icon: "folder-outline" },
-  { label: "Team", icon: "people-outline" },
-  { label: "Settings", icon: "settings-outline" },
+  { label: "Dashboard", icon: LayoutDashboard },
+  { label: "Projects", icon: Building2 },
+  { label: "My Tasks", icon: ListTodo },
+  { label: "Workflows", icon: Workflow },
+  { label: "Documents", icon: Folder },
+  { label: "Team", icon: Users },
+  { label: "Settings", icon: Settings },
 ];
 
 const projects = [
@@ -91,19 +107,19 @@ const projects = [
 
 const activities = [
   {
-    icon: "checkmark-circle-outline" as IconName,
+    icon: CircleCheck as IconName,
     title: "Stage approved",
     detail: "North Ridge Apartments · Due Diligence",
     time: "12 minutes ago",
   },
   {
-    icon: "document-text-outline" as IconName,
+    icon: FileText as IconName,
     title: "Document uploaded",
     detail: "Westfield Commercial · Site Survey",
     time: "1 hour ago",
   },
   {
-    icon: "chatbubble-outline" as IconName,
+    icon: MessageCircle as IconName,
     title: "New project note",
     detail: "Oak Creek Residences",
     time: "3 hours ago",
@@ -136,15 +152,6 @@ function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
-  const [fontsLoaded, fontError] = useFonts({
-    ...Ionicons.font,
-  });
-
-  console.log("Pivot Ionicons font:", {
-    fontsLoaded,
-    error: fontError?.message,
-  });
-
   const handleNav = (label: string) => {
     setActiveNav(label);
     setSidebarOpen(false);
@@ -154,7 +161,7 @@ function DashboardContent() {
     <View style={styles.sidebar}>
       <View style={styles.brand}>
         <View style={styles.brandIcon}>
-          <Ionicons name="layers-outline" size={23} color="#FFF" />
+          <Layers size={23} color="#FFF" />
         </View>
         <Text style={styles.brandText}>
           PIVOT<Text style={{ color: COLORS.orangeLight }}>.</Text>
@@ -177,8 +184,7 @@ function DashboardContent() {
             ]}
             onPress={() => handleNav(item.label)}
           >
-            <Ionicons
-              name={item.icon}
+            <item.icon
               size={20}
               color={activeNav === item.label ? COLORS.orangeLight : "#9CAAB3"}
             />
@@ -205,17 +211,13 @@ function DashboardContent() {
           accessibilityLabel="Toggle Pivot AI assistant"
         >
           <View style={styles.aiLauncherIcon}>
-            <Ionicons name="sparkles" size={20} color={COLORS.orangeLight} />
+            <Sparkles size={20} color={COLORS.orangeLight} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.aiLauncherTitle}>Pivot AI</Text>
             <Text style={styles.aiLauncherSub}>Your project assistant</Text>
           </View>
-          <Ionicons
-            name="chevron-forward"
-            size={16}
-            color={COLORS.orangeLight}
-          />
+          <ChevronRight size={16} color={COLORS.orangeLight} />
         </TouchableOpacity>
         <View style={styles.workspaceInfo}>
           <View style={styles.workspaceAvatar}>
@@ -231,23 +233,12 @@ function DashboardContent() {
           style={styles.logoutButton}
           onPress={() => router.replace("/")}
         >
-          <Ionicons name="log-out-outline" size={19} color="#9CAAB3" />
+          <LogOut size={19} color="#9CAAB3" />
           <Text style={styles.logoutText}>Sign out</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
-
-  if (!fontsLoaded) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: COLORS.background,
-        }}
-      />
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -279,11 +270,7 @@ function DashboardContent() {
 
           <View style={styles.topbarRight}>
             <TouchableOpacity style={styles.iconButton}>
-              <Ionicons
-                name="notifications-outline"
-                size={21}
-                color={COLORS.muted}
-              />
+              <Bell size={21} color={COLORS.muted} />
             </TouchableOpacity>
 
             <View style={styles.userAvatar}>
@@ -314,14 +301,7 @@ function DashboardContent() {
             <SettingsWorkspace />
           ) : (
             <View style={styles.placeholder}>
-              <Ionicons
-                name={
-                  navigation.find((n) => n.label === activeNav)?.icon ??
-                  "grid-outline"
-                }
-                size={42}
-                color={COLORS.orange}
-              />
+              <LayoutDashboard size={42} color={COLORS.orange} />
               <Text style={styles.placeholderTitle}>{activeNav}</Text>
               <Text style={styles.placeholderText}>
                 This workspace is coming soon.
